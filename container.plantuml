@@ -1,0 +1,37 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_PORTRAIT()
+LAYOUT_LEFT_RIGHT()
+
+System_Boundary(c1, "B2B") {
+    Container(b2b, "B2B - Login","ReactJS", "Interface para o usuário executar o login")
+    Container(telB2b, "B2B - LISTA TELEFONES","ReactJS", "Interface onde está disposta as informações de telefones do usuário")
+}
+
+System_Boundary(c2, "BFF") {
+    Container(auth, "Atenticação via login", "Rest/Node")
+    Container(authRefresh, "Autenticação via refresh token", "Rest/Node")
+    Container(cad, "Solicitar cadastro", "REST/Node")
+    Container(att, "Atualizacao de cadastro", "REST/Node")
+    Container(off, "Desativacao de cadastro", "REST/Node")
+}
+
+System_Ext(onboard, "API Onboarding", "API que disponibilza forma dos clientes cadastrarem seu número de telefone na base da BCD na Plataforma de Autenticação e Identificação de Chamadas. No contexto, recebe a requisição de uma rota autorizada do BFF e realiza o cadastro, atualização ou desativação de um cliente.")
+
+Rel(auth, onboard, "Autenticação com acess_token", "HTTP/JSON")
+Rel(b2b, auth, "Autenticar rotas da API Onboarding com acess_token")
+
+Rel(telB2b, cad, "Solicitar cadastro de cliente", "HTTP/JSON")
+Rel(cad, onboard , "Cadastrar", "HTTP/JSON", "rota autenticada: acess_token")
+
+Rel(telB2b, att, "Solicitar atualizacao de cliente", "HTTP/JSON")
+Rel(att, onboard , "Atualizar", "HTTP/JSON", "rota autenticada: acess_token")
+
+
+Rel(telB2b, off, "Solicitar desativação de cliente", "HTTP/JSON")
+Rel(off, onboard , "Desativar", "HTTP/JSON", "rota autenticada: acess_token")
+
+Rel(telB2b, authRefresh, "Solicitar novo acess_token", "HTTP/JSON")
+Rel(authRefresh, onboard, "Gerar novo acess_token", "HTTP/JSON")
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_PORTRAIT()
+LAYOUT_LEFT_RIGHT()
+
+Person(user, "User", "Usuário empresarial")
+System_Boundary(c1, "B2B") {
+    System(b2b, "B2B", "Portal empresarial onde o usuário tem acesso aos seu produtos da Algar Telecom")
+    System(telB2b, "B2B - LISTA TELEFONES", "Dentro do B2B há a lista de telefones do usuário onde o mesmo fará as ações de cadastrar, atualizar ou desativar o Stir Shaken do numero desejado")
+}
+
+System(bff, "BFF", "Todas chamas de serviços realizadas no portal B2B devem passar pelo BFF. No contexto, será responsavel por receber requisições de cadastros, atualização ou desativação de Stir Shaken do B2B e envia-las a API Onboarde, respondendo de forma correta.")
+System_Ext(onboard, "API Onboarding", "API que disponibilza forma dos clientes cadastrarem seu número de telefone na base da BCD na Plataforma de Autenticação e Identificação de Chamadas. No contexto, recebe a requisição de uma rota autorizada do BFF e realiza o cadastro, atualização ou desativação de um cliente.")
+
+Rel(user, b2b, "Faz login")
+Rel(b2b, telB2b, "tem")
+Rel(telB2b, bff,"req/res", "Rest - HTTP/JSON")
+Rel(bff, onboard, "req/res", "Rest - HTTP/JSON")
+
+@enduml

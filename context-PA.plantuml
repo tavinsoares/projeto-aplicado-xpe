@@ -1,0 +1,30 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_PORTRAIT()
+LAYOUT_LEFT_RIGHT()
+
+Person(seller, "Funcionário vendedor", "Funcionado responsável pelo setor de vendas.")
+Person(deliveryman, "Funcionário entregador", "Funcionario responsável pelo setor de entregas.")
+Person(manager, "Funcionário Gerente", "Funcionario responsável pelo setor de gerencia da loja.")
+Person(finalClient, "Cliente da loja", "Cliente que realiza compra")
+
+System(management, "Sistema de gerenciamento de entregas de pedido", "Aplicação Web para o gerenciamento de pedidos para entregas. Permite os funcinarios interagem com os pedidos para entrega atraves de cadastro, atualizações e detalhamento dos pedidos para entrega")
+
+System_Boundary(aws, "Cloud AWS") {
+    System(gateway, "Backend", "Backend disponilizado para a aplicação web. Recebe requisiçõe e responde corretamente a aplicação web.")
+    System(aws_services, "Serviços da AWS", "Responsáveis por manipular os dados recebidos e executar ações apropriadas, como manutenção de cadastros dos pedidos de entrega e notificação de cliente")   
+}
+
+Rel(seller, management, "Cadastrar pedidos na fila para entrega", "via interface")
+
+Rel(manager, management, "Autoriza pedido para entrega", "via interface")
+
+Rel(deliveryman, management, "Atribuir entrega a si", "via interface")
+Rel(deliveryman, management, "Gerar rotas de entrega", "via interface")
+Rel(deliveryman, management, "Atualiza status de entrega do pedido", "via interface")
+
+Rel(management, gateway, "Faz requisição", "via API")
+Rel(gateway, aws_services, "Encaminha requisições para determinados serviços", "via eventos")
+Rel(aws_services, finalClient, "Notifica sobre atualização de pedido", "via whatsapp")
+@enduml

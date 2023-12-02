@@ -1,0 +1,38 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_PORTRAIT()
+LAYOUT_LEFT_RIGHT()
+
+AddRelTag("async", $lineStyle = DashedLine())
+
+Person(deliveryman, "Funcionário entregador", "Funcionado responsável pelo setor de entregas.")
+Person(manager, "Funcionário Gerente", "Funcionario responsável pelo setor de gerencia da loja.")
+Person(finalClient, "Cliente da loja", "Cliente que realiza compra na loja.")
+Person(seller, "Funcionário vendedor", "Funcionado responsável pelo setor de vendas.")
+
+System(management, "Sistema Web de gerenciamento de entregas de pedido", "Aplicação Web para o gerenciamento de pedidos para entregas. Permite os funcinarios interagem com os pedidos para entrega atraves de cadastro, atualizações e detalhamento dos pedidos para entrega")
+
+System_Boundary(aws, "Sistema Backend AWS") {
+    Container(gateway, "Backend REST API", "Gateway API", "Responsavel por receber requisições do sistema, direciona-lás e responder corretamente a aplicação web" )
+    Container(events, "Event Brigde", "Event Bus", "Responsável por receber receber eventos e direciona-los para a lambda correta.")
+    Container(notification, "Função Notificação","Aws Lambda", "Função responsavel por notificar cliente através de um número de whatsapp")
+    Container(att, "Função Atualização", "Aws Lambda", "Função responsável por receber um payload de pedido de entrega e atualizar as informações de entrega.")
+    ContainerDb(db, "Banco de dados", "DynamoDB", "Contém informações sobre o pedido e entrega.")
+}
+
+Rel(manager, management, "Aprova pedido para entrega", "via interface do sistema")
+Rel(management, gateway, "Envia pedido para atualizacao de pedido aprovado", "HTTP/JSON", $tags = "async")
+Rel(gateway, events, "Envia evento de atualização de pedido", "HTTP/JSON através de source event", $tags = "async")
+Rel(events, att, "Envia pedido para atualizar", "atráves de event rule para lambda", $tags = "async")
+Rel(att, db, "Atuazlica pedido de entrega", $tags = "async")
+Rel(att, gateway, "Envia pedido para notifição de atualização", "HTTP/JSON através de source event", $tags = "async")
+Rel(gateway, events, "Envia evento de notificação de pedido", "HTTP/JSON através de source event", $tags = "async")
+
+Rel(events, notification, "Envia status do pedido para ser notificado", "atraves de event rule para lambda", $tags = "async")
+Rel(notification, finalClient, "Envia notificação de pedido na fila", "atraves de whatsapp", $tags = "async")
+Rel(notification, seller, "Envia notificação de pedido aprovado", "atraves de whatsapp", $tags = "async")
+Rel(notification, deliveryman, "Envia notificação de pedido aprovado", "atraves de whatsapp", $tags = "async")
+
+
+@enduml

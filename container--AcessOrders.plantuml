@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_PORTRAIT()
+LAYOUT_LEFT_RIGHT()
+
+AddRelTag("async", $lineStyle = DashedLine())
+
+Person(seller, "Funcionário", "Funcionado responsável pelo setor de vendas, entregas ou gerencia.")
+
+System(management, "Sistema Web de gerenciamento de entregas de pedido", "Aplicação Web para o gerenciamento de pedidos para entregas. Permite os funcinarios interagem com os pedidos para entrega atraves de cadastro, atualizações e detalhamento dos pedidos para entrega")
+
+System_Boundary(aws, "Sistema Backend AWS") {
+    Container(gateway, "Backend REST API", "Gateway API", "Responsavel por receber requisições do sistema, direciona-lás e responder corretamente a aplicação web" )
+    Container(get, "Função Recupera lista", "Aws Lambda", "Função responsável por buscar a lista de pedidos para entrega atualizada.")
+    ContainerDb(db, "Banco de dados", "DynamoDB", "Contém informações sobre o pedido e entrega.")
+}
+
+Rel(seller, management, "Acessa lista de pedidos para entrega", "via interface do sistema")
+
+Rel(management, gateway, "Envia requisição para recuperar lista", "HTTP/JSON", $tags = "async")
+Rel(gateway, get, "Busca pedidos para entrega atualizados", "HTTP/JSON", $tags = "async")
+
+Rel(get, db, "Busca pedidos para entrega", $tags = "async")
+
+
+@enduml
